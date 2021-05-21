@@ -1,0 +1,869 @@
+--[[
+Christie Boxer Projector Control Plugin - Basic
+Original Parsing Functions - Christie Roadster Control Plugin - Jacob Frame - February 2019
+Boxer version - Matthew Drake June 2019
+]]--
+PluginInfo = 
+{
+	Name = "Christie~Boxer", -- The tilde here indicates folder structure in the Shematic Elements pane
+	Version = "2.0.5",
+	Id = "4e4854bb-0f8d-409a-8739-949f5924c728",
+	Description = "Simple Control Plugin for Christie Boxer Projectors",
+	ShowDebug = true,
+}
+function GetProperties()
+
+  props = { 
+      {
+        Name = "Projector Name",
+        Type = "string",
+	  },
+      {
+        Name = "IP Address",
+        Type = "string",
+      },
+      {
+        Name = "Port",
+        Type = "integer",
+        Min = 1,
+        Max = 65535,
+        Value = 3002
+      },
+  	}
+	return props
+end
+function GetControls(props)
+ctls = {
+		--Remove after Testing--
+		--[[
+		{
+			Name = "code",
+			ControlType = "Text",
+		    PinStyle = "Input",
+			Count = 1
+		},
+		--End Remove after Testing--]]--
+		{
+			Name = "Info",
+			ControlType = "Text",
+		    UserPin = true,
+			PinStyle = "Output",
+			Count = 5
+		},
+		{
+			Name = "Network Status LED",
+			ControlType = "Indicator",
+			IndicatorType = "LED",
+		    UserPin = true,
+			PinStyle = "Output",
+			Count = 1
+		},
+		{
+			Name = "Activity Status",
+			ControlType = "Indicator",
+			IndicatorType = "Status",
+		    UserPin = true,
+			PinStyle = "Output",
+			Count = 1
+		},
+		{
+			Name = "Power Button",
+			ControlType = "Button",
+			ButtonType = "Toggle",
+			UserPin = true,
+			PinStyle = "Both",
+			Count = 1
+		},
+		{
+			Name = "Shutter Button",
+			ControlType = "Button",
+			ButtonType = "Toggle",
+			UserPin = true,
+			PinStyle = "Both",
+			Count = 1
+		},
+		{
+			Name = "Lamp_State",
+			ControlType = "Button",
+			ButtonType = "Momentary",
+			UserPin = true,
+			PinStyle = "Output",
+			Count = 6
+		},
+		{
+			Name = "Lamp_Driver_Temp",
+			ControlType = "Indicator",
+			IndicatorType = "Text",
+			UserPin = true,
+			PinStyle = "Output",
+			Count = 6
+		},
+		{
+			Name = "Lamp_Hours",
+			ControlType = "Indicator",
+			IndicatorType = "Text",
+			UserPin = true,
+			PinStyle = "Output",
+			Count = 6
+		},
+		{
+			Name = "Air Intake Temp Meter",
+			ControlType = "Knob",
+			ControlUnit = "Integer",
+			Min = 0,
+			Max = 200,
+			UserPin = true,
+			PinStyle = "Output",
+			Count = 1
+		},
+		{
+			Name = "Main Board Temp Meter",
+			ControlType = "Knob",
+			ControlUnit = "Integer",
+			Min = 0,
+			Max = 200,
+			UserPin = true,
+			PinStyle = "Output",
+			Count = 1
+		},
+		{
+			Name = "Air Intake Temp Text",
+			ControlType = "Indicator",
+			IndicatorType = "Text",
+			UserPin = true,
+			PinStyle = "Output",
+			Count = 1
+		},
+		{
+			Name = "Main Board Temp Text",
+			ControlType = "Indicator",
+			IndicatorType = "Text",
+			UserPin = true,
+			PinStyle = "Output",
+			Count = 1
+		},
+	}
+	return ctls
+end
+function GetControlLayout(props)
+local layout = {}
+
+	--Remove after Testing--
+	--[[
+	layout.code = {PrettyName="code",Style="Text",Position={8,14},Size={6,6},IsInvisible = true}
+	--End Remove after Testing--]]--
+
+    layout["Info 1"] = {
+     Style = "Text",
+     Position = { 177,63 },
+     Size = { 150,20 }
+  }
+    layout["Info 2"] = {
+     Style = "Text",
+     Position = { 177,83 },
+     Size = { 150,20 }
+  }
+    layout["Info 3"] = {
+     Style = "Text",
+     Position = { 177,104 },
+     Size = { 150,20 }
+  }
+    layout["Info 4"] = {
+     Style = "Text",
+     Position = { 177,125 },
+     Size = { 150,20 }
+  }
+    layout["Info 5"] = {
+     Style = "Text",
+     Position = { 177,145 },
+     Size = { 150,20 }
+  }
+    layout["Network Status LED"] = {
+     Style = "Led",
+     Position = { 265, 0 },
+     Size = { 20, 20 },
+     Color = "Red"
+  }
+    layout["Activity Status"] = {
+     Style = "Text",
+     Position = { 0, 0 },
+     Size = { 250, 20 }
+  }
+    layout["Power Button"] = {
+     Style = "Button",
+     Position = { 370,66 },
+     Size = { 70, 50 },
+     Color = { 0x00, 0xFF, 0x00 },
+     OffColor = { 0x55, 0x55, 0x55 },
+     UnlinkOffColor = true,
+     Legend = "Power"
+  }
+	layout["Shutter Button"] = {
+     Style = "Button",
+     Position = { 450, 66 },
+     Size = { 70, 50 },
+     Color = { 0x00, 0xFF, 0x00 },
+     OffColor = { 0x55, 0x55, 0x55 },
+     UnlinkOffColor = true,
+     Legend = "Shutter"
+  }
+	layout["Lamp_State 1"] = {
+     Style = "Button",
+     Position = { 57, 233 },
+     Size = { 45, 45 },
+	 CornerRadius = 5,
+     Color = { 0, 255, 0 },
+     UnlinkOffColor = false,
+	 Icon = "Lightbulb",
+	 IconColor = "white",
+  }
+	layout["Lamp_State 2"] = {
+     Style = "Button",
+     Position = { 102, 233 },
+     Size = { 45, 45 },
+	 CornerRadius = 5,
+     Color = { 0, 255, 0 },
+     UnlinkOffColor = false,
+	 Icon = "Lightbulb",
+  }
+	layout["Lamp_State 3"] = {
+     Style = "Button",
+     Position = { 147, 233 },
+     Size = { 45, 45 },
+	 CornerRadius = 5,
+     Color = { 0, 255, 0 },
+     UnlinkOffColor = false,
+	 Icon = "Lightbulb",
+  }
+	layout["Lamp_State 4"] = {
+     Style = "Button",
+     Position = { 192,233 },
+     Size = { 45, 45 },
+	 CornerRadius = 5,
+     Color = { 0, 255, 0 },
+     UnlinkOffColor = false,
+	 Icon = "Lightbulb",
+  }
+	layout["Lamp_State 5"] = {
+     Style = "Button",
+     Position = { 237, 233 },
+     Size = { 45, 45 },
+	 CornerRadius = 5,
+     Color = { 0, 255, 0 },
+     UnlinkOffColor = false,
+	 Icon = "Lightbulb",
+  }
+	layout["Lamp_State 6"] = {
+     Style = "Button",
+     Position = { 282, 233 },
+     Size = { 45, 45 },
+	 CornerRadius = 5,
+     Color = { 0, 255, 0 },
+     UnlinkOffColor = false,
+	 Icon = "Lightbulb",
+  }
+	layout["Lamp_Driver_Temp 1"] = {
+     Style = "Text",
+     Position = { 57,278 },
+     Size = { 45,26 },
+  }
+	layout["Lamp_Driver_Temp 2"] = {
+     Style = "Text",
+     Position = { 102,278 },
+     Size = { 45,26 },
+  }
+	layout["Lamp_Driver_Temp 3"] = {
+     Style = "Text",
+     Position = { 147,278 },
+     Size = { 45,26 },
+  }
+	layout["Lamp_Driver_Temp 4"] = {
+     Style = "Text",
+     Position = { 192,278 },
+     Size = { 45,26 },
+  }
+	layout["Lamp_Driver_Temp 5"] = {
+     Style = "Text",
+     Position = { 237,278 },
+     Size = { 45,26 },
+  }
+	layout["Lamp_Driver_Temp 6"] = {
+     Style = "Text",
+     Position = { 282,278 },
+     Size = { 45,26 },
+  }
+	layout["Lamp_Hours 1"] = {
+     Style = "Text",
+     Position = { 57,311 },
+     Size = { 45,26 },
+  }
+	layout["Lamp_Hours 2"] = {
+     Style = "Text",
+     Position = { 102,311 },
+     Size = { 45,26 },
+  }
+	layout["Lamp_Hours 3"] = {
+     Style = "Text",
+     Position = { 147,311 },
+     Size = { 45,26 },
+  }
+	layout["Lamp_Hours 4"] = {
+     Style = "Text",
+     Position = { 192,311 },
+     Size = { 45,26 },
+  }
+	layout["Lamp_Hours 5"] = {
+     Style = "Text",
+     Position = { 237,311 },
+     Size = { 45,26 },
+  }
+	layout["Lamp_Hours 6"] = {
+     Style = "Text",
+     Position = { 282,311 },
+     Size = { 45,26 },
+  }
+	layout["Air Intake Temp Meter"] = {
+     Style = "Meter",
+	 MeterStyle = "Standard",
+	 ShowTextbox = false,
+     Position = { 406,186 },
+     Size = { 44,100 },
+  }
+	layout["Main Board Temp Meter"] = {
+     Style = "Meter",
+	 MeterStyle = "Standard",
+	 ShowTextbox = false,
+     Position = { 450,186 },
+     Size = { 44,100 },
+  }
+  layout["Air Intake Temp Text"] = {
+     Style = "Text",
+     Position = { 406,286 },
+     Size = { 44,26 },
+  }
+	layout["Main Board Temp Text"] = {
+     Style = "Text",
+     Position = { 450,286 },
+     Size = { 44,26 },
+  }  
+
+local graphics = {
+  	{
+        Type = "GroupBox",
+        Text = "Information",
+        HTextAlign = "Left",
+        StrokeWidth = 1,
+        CornerRadius = 8,
+        Fill = { 215, 215, 235 },
+        Position = { 0, 40 },
+        Size = { 340, 142 },
+  	},
+  	{
+  		Type = "GroupBox",
+  		Text = "Controls",
+  		HTextAlign = "Center",
+  		StrokeWidth = 1,
+  		CornerRadius = 8,
+  		Fill = { 215, 215, 235 },
+  		Position = { 360,40 },
+  		Size = { 170,105 },
+  	},
+	{
+  		Type = "GroupBox",
+  		Text = "Lamp Info",
+  		HTextAlign = "Left",
+  		StrokeWidth = 1,
+  		CornerRadius = 8,
+  		Fill = { 215, 215, 235 },
+  		Position = { 0,202 },
+  		Size = { 340,149 },
+  	},
+	{
+  		Type = "GroupBox",
+  		Text = "System Temp",
+  		HTextAlign = "Center",
+  		StrokeWidth = 1,
+  		CornerRadius = 8,
+  		Fill = { 215, 215, 235 },
+  		Position = { 360,164 },
+  		Size = { 170,181 },
+  	},
+  	{
+  		Type = "Label",
+  		Text = "Projector Name:",
+  		TextSize = 12,
+        HTextAlign = 'Right',
+        Position = { 17,63},
+        Size = { 150,20 },
+  	},
+	{
+  		Type = "Label",
+  		Text = "Model:",
+  		TextSize = 12,
+        HTextAlign = 'Right',
+        Position = { 17,83},
+        Size = { 150,20 },
+  	},
+	{
+  		Type = "Label",
+  		Text = "Serial Number:",
+  		TextSize = 12,
+        HTextAlign = 'Right',
+        Position = { 17,104},
+        Size = { 150,20 },
+  	},
+	{
+  		Type = "Label",
+  		Text = "Build Date:",
+  		TextSize = 12,
+        HTextAlign = 'Right',
+        Position = { 17,125 },
+        Size = { 150,20 },
+  	},
+	{
+  		Type = "Label",
+  		Text = "Output Resolution:",
+  		TextSize = 12,
+        HTextAlign = 'Right',
+        Position = { 17,145 },
+        Size = { 150,20 },
+  	},
+	{
+  		Type = "Label",
+  		Text = "State",
+  		TextSize = 12,
+        HTextAlign = 'Center',
+        Position = { 16,243 },
+        Size = { 41,26 },
+  	},
+	{
+  		Type = "Label",
+  		Text = "Driver\nTemp",
+  		TextSize = 12,
+        HTextAlign = 'Center',
+        Position = { 16,278 },
+        Size = { 41,26 },
+  	},
+	{
+  		Type = "Label",
+  		Text = "Lamp\nHours",
+  		TextSize = 12,
+        HTextAlign = 'Center',
+        Position = { 16,311 },
+        Size = { 41,26 },
+  	},
+	{
+  		Type = "Label",
+  		Text = "Air\nIntake",
+  		TextSize = 12,
+        HTextAlign = 'Center',
+        Position = { 406,314 },
+        Size = { 44,26 },
+  	},
+	{
+  		Type = "Label",
+  		Text = "Main\nBoard",
+  		TextSize = 12,
+        HTextAlign = 'Center',
+        Position = { 450,314 },
+        Size = { 44,26 },
+  	},
+	{
+  		Type = "Label",
+  		Text = "A1",
+  		TextSize = 12,
+        HTextAlign = 'Center',
+        Position = { 57,216 },
+        Size = { 45,17 },
+  	},
+	{
+  		Type = "Label",
+  		Text = "A2",
+  		TextSize = 12,
+        HTextAlign = 'Center',
+        Position = { 102,216 },
+        Size = { 45,17 },
+  	},
+	{
+  		Type = "Label",
+  		Text = "A3",
+  		TextSize = 12,
+        HTextAlign = 'Center',
+        Position = { 147,216 },
+        Size = { 45,17 },
+  	},
+	{
+  		Type = "Label",
+  		Text = "B1",
+  		TextSize = 12,
+        HTextAlign = 'Center',
+        Position = { 192,216 },
+        Size = { 45,17 },
+  	},
+	{
+  		Type = "Label",
+  		Text = "B2",
+  		TextSize = 12,
+        HTextAlign = 'Center',
+        Position = { 237,216 },
+        Size = { 45,17 },
+  	},
+	{
+  		Type = "Label",
+  		Text = "B3",
+  		TextSize = 12,
+        HTextAlign = 'Center',
+        Position = { 282,216 },
+        Size = { 45,17 },
+  	},
+  }
+ return layout,graphics
+ end
+ if Controls then
+--Start Code--
+
+--Pre Script--
+--Set Components--
+--Properties for Plugin--
+IP = Properties['IP Address'] -- Text Box
+Port = Properties['Port'] --Integer Knob (3002 default)
+
+--Projector Info--
+Name = Controls['Info'][1] --Text Box
+  Name.String = Properties['Projector Name'].Value
+Model = Controls['Info'][2] --Text Box
+  Model.String = 'Loading'
+SN = Controls['Info'][3] --Text Box
+  SN.String = 'Loading'
+OutputRes = Controls['Info'][4] --Text Box
+  OutputRes.String = 'Loading'
+BuildDate = Controls['Info'][5] --Text Box
+  BuildDate.String = 'Loading'
+--Network Status--
+Status = Controls['Activity Status'] --Status Box (0 = OK - Green 1 = Compromised - Orange 2 = Fault - Red 3 = Not Present - Gray 4 = Missing - Red 5 = Initializing - Blue)
+NetworkLED = Controls['Network Status LED'] --Indicator LED
+--Control Buttons--
+Power = Controls['Power Button'] --Toggle Button
+Shutter = Controls['Shutter Button'] --Toggle Button
+
+--Set Defaults on Lamp Info and System Temp--
+for i = 1,6 do
+  Controls["Lamp_State"][i].Color = "Blue"
+  Controls["Lamp_Hours"][i].String = ""
+  Controls["Lamp_Driver_Temp"].String = ""
+end
+Controls["Air Intake Temp Text"].String = ""
+Controls["Air Intake Temp Meter"].Value = 0
+Controls["Main Board Temp Text"].String = ""
+Controls["Main Board Temp Meter"].Value = 0
+
+--Create Objects--
+--TCP Socket
+	sock = TcpSocket.New()
+	sock.ReadTimeout = 0
+	sock.WriteTimeout = 0
+	sock.ReconnectTimeout = 5
+--Timers
+	updateTimer = Timer.New()
+  pollTimer = Timer.New()
+--Set Controls--
+
+--Set Variables--
+buffer = ''
+Category = ''
+index = ''
+group = ''
+state = ''
+desc = ''
+ALRM_Table = {}
+CONF_Table = {}
+SYST_Table = {}
+LAMP_Table = {}
+COOL_Table = {}
+TEMP_Table = {}
+SIGN_Table = {}
+VERS_Table = {}
+SERI_Table = {}
+
+--Functions--
+--Debug Functions
+function debug(text)
+	print(os.date(), text)
+end
+function status(data, typ)
+Status.Value = typ
+Status.String = data
+local color = ''
+if typ == 0 then color = "Green" elseif typ == 1 then color = 'Orange' elseif typ == 2 then color = 'Red' elseif typ == 3 then color = 'Gray' elseif typ == 4 then color = 'Red' elseif typ == 5 then color = 'Blue' end
+NetworkLED.Color = color
+end
+--First Call on TCP Connect
+function firstCall()
+  fetch('(PWR?)')
+  fetch('(SHU?)')
+  fetch('(SST?)')
+  updateTimer:Start(.5)
+  pollTimer:Start(5)
+end
+--Send to Projector to Fetch Data
+function fetch(q)
+		if sock.IsConnected then
+--    debug(q) --Debug
+			sock:Write(q)
+		end
+	end
+--Parse incoming Data
+function parseData(data)
+--debug(data)
+  --Category
+	if string.match(data, ('%((.+)%!')) ~= nil then 
+    Category = string.match(data, ('%((.+)%!')) 
+  end
+  --SST Category
+  if string.match(Category, '(%a+)') == 'SST' then
+    Category = string.match(Category, '(%a+)')
+  end
+  --Alarm
+  if string.match(data, ('%"SST+ALRM(.+)%"')) ~= nil then alarm = string.match(data, ('%"SST+ALRM(.+)%"')) ALRM(data) return else alarm = 'Nil' end --debug('Alarm: '..Alarm)
+  --Index
+  if string.match(data, ('%!(%d+)%s')) ~= nil then index = string.match(data, ('%!(%d+)%s')) else index = 'Nil' end --debug('Index: '..Index)
+	--Group
+  if string.match(data, ('%+(%a+)%!')) ~= nil then group = string.match(data, ('%+(%a+)%!')) else group = 'Nil' end --debug('Group: '..Group)
+	--State
+  if string.match(data, ('%s%"(.+)%"%s')) ~= nil then state = string.match(data, ('%s%"(.+)%"%s')) else state = 'Nil' end --debug('State: '..State)
+	--Description
+  if string.match(data, ('%"%s%"(.+)%"')) ~= nil then  desc = string.match(data, ('%"%s%"(.+)%"')) else desc = 'Nil' end --debug('Desc: '..Desc) 
+  
+  --Sort based on Category
+  if Category == 'PWR' then
+    if index == "Nil" then return end
+  	PWR(index)
+	elseif Category == 'SHU' then
+    if index == "Nil" then return end
+  	SHU(index)
+	elseif Category == 'SST' then
+    if index == "Nil" then return end
+    
+    if group =="ALRM" then ALRM()
+    elseif group == "CONF" then CONF_Table[index] = {State=state,Desc=desc} CONF()
+    elseif group == "SYST" then SYST_Table[index] = {State=state,Desc=desc} SYST()
+    elseif group == "LAMP" then LAMP_Table[index] = {State=state,Desc=desc} LAMP()
+    elseif group == "COOL" then COOL_Table[index] = {State=state,Desc=desc} COOL()
+    elseif group == "TEMP" then TEMP_Table[index] = {State=state,Desc=desc} TEMP()
+    elseif group == "SIGN" then SIGN_Table[index] = {State=state,Desc=desc} SIGN()
+    elseif group == "VERS" then VERS_Table[index] = {State=state,Desc=desc} VERS()
+    elseif group == "SERI" then SERI_Table[index] = {State=state,Desc=desc} SERI()
+    end
+  end
+end
+
+--Power Status
+function PWR(Index)
+	if Index == '000' then
+		Power.Boolean = false
+		Power.Legend = 'Stand By'
+		Power.Color = 'Red'
+	elseif Index == '001' then
+		Power.Boolean = true
+		Power.Legend = 'Power On'
+		Power.Color = 'Green'
+	elseif Index == '010' then
+		Power.Boolean = false
+		Power.Legend = 'Cooling Down'
+		Power.Color = 'Blue'
+	elseif Index == '011' then
+		Power.Boolean = true
+		Power.Legend = 'Warming Up'
+		Power.Color = 'Blue'
+	else
+		Power.Boolean = false
+		Power.Color = 'Yellow'
+		Power.Legend = 'Power Error'
+	end
+end
+--Shutter Status
+function SHU(Index)
+	if Index == '000' then
+		Shutter.Boolean = true
+		Shutter.Color = 'Green'
+		Shutter.Legend = 'Shutter Open'
+	elseif Index == '001' then
+		Shutter.Boolean = false
+		Shutter.Color = 'Red'
+		Shutter.Legend = 'Shutter Closed'
+	else
+		Shutter.Boolean = false
+		Shutter.Color = 'Yellow'
+		Shutter.Legend = 'Shutter Error'
+	end
+end
+
+function ALRM()
+  for i,v in pairs(ALRM_Table) do
+  end
+end
+
+function CONF()
+  for i,v in pairs(CONF_Table) do
+    if i == '000' then Model.String = CONF_Table[i].State
+    elseif i == '001' then SN.String = CONF_Table[i].State
+    elseif i == '002' then BuildDate.String = CONF_Table[i].State
+    elseif i == '003' then OutputRes.String = CONF_Table[i].State
+    end
+  end
+end
+
+function SYST()
+  for i,v in pairs(SYST_Table) do
+  end
+end
+
+function LAMP()
+  --Lamp State--
+  for i,v in pairs(LAMP_Table) do
+    if index == '000' then if LAMP_Table[index].State == "On" then Controls["Lamp_State"][1].Color = "Green" else Controls["Lamp_State"][1].Color = "Red" end
+    elseif index == '040' then if LAMP_Table[index].State == "On" then Controls["Lamp_State"][2].Color = "Green" else Controls["Lamp_State"][2].Color = "Red" end
+    elseif index == '050' then if LAMP_Table[index].State == "On" then Controls["Lamp_State"][3].Color = "Green" else Controls["Lamp_State"][3].Color = "Red" end
+    elseif index == '060' then if LAMP_Table[index].State == "On" then Controls["Lamp_State"][4].Color = "Green" else Controls["Lamp_State"][4].Color = "Red" end
+    elseif index == '070' then if LAMP_Table[index].State == "On" then Controls["Lamp_State"][5].Color = "Green" else Controls["Lamp_State"][5].Color = "Red" end
+    elseif index == '080' then if LAMP_Table[index].State == "On" then Controls["Lamp_State"][6].Color = "Green" else Controls["Lamp_State"][6].Color = "Red" end
+    --Lamp Hours--
+    elseif index == '001' then Controls["Lamp_Hours"][1].String = string.match(LAMP_Table[index].State, "%S*")
+    elseif index == '041' then Controls["Lamp_Hours"][2].String = string.match(LAMP_Table[index].State, "%S*")
+    elseif index == '051' then Controls["Lamp_Hours"][3].String = string.match(LAMP_Table[index].State, "%S*")
+    elseif index == '061' then Controls["Lamp_Hours"][4].String = string.match(LAMP_Table[index].State, "%S*")
+    elseif index == '071' then Controls["Lamp_Hours"][5].String = string.match(LAMP_Table[index].State, "%S*")
+    elseif index == '081' then Controls["Lamp_Hours"][6].String = string.match(LAMP_Table[index].State, "%S*")
+    end
+  end
+end
+
+function COOL()
+  for i,v in pairs(COOL_Table) do
+  end
+end
+
+function TEMP()
+  for i,v in pairs(TEMP_Table) do 
+    if index == '023' then Controls["Lamp_Driver_Temp"][1].String = TEMP_Table[index].State
+    elseif index == '024' then Controls["Lamp_Driver_Temp"][2].String = TEMP_Table[index].State
+    elseif index == '025' then Controls["Lamp_Driver_Temp"][3].String = TEMP_Table[index].State
+    elseif index == '026' then Controls["Lamp_Driver_Temp"][4].String = TEMP_Table[index].State
+    elseif index == '027' then Controls["Lamp_Driver_Temp"][5].String = TEMP_Table[index].State
+    elseif index == '028' then Controls["Lamp_Driver_Temp"][6].String = TEMP_Table[index].State
+    elseif index == '002' then 
+      Controls["Air Intake Temp Meter"].Value = string.match(TEMP_Table[index].State, "%d+")
+      Controls["Air Intake Temp Text"].String = TEMP_Table[index].State
+    elseif index == '004' then 
+      Controls["Main Board Temp Meter"].Value = string.match(TEMP_Table[index].State, "%d+")
+      Controls["Main Board Temp Text"].String = TEMP_Table[index].State
+    end
+  end
+end
+
+function SIGN()
+  for i,v in pairs(SIGN_Table) do
+  end
+end
+
+function VERS()
+  for i,v in pairs(VERS_Table) do
+  end
+end
+
+function SERI()
+  for i,v in pairs(SERI_Table) do
+  end
+end
+
+--EventHandlers--
+sock.EventHandler = function(sock, evt, err)
+	if evt == TcpSocket.Events.Connected then
+		status('Socket connected', 0)
+		debug('Socket Connected')
+		firstCall()
+	elseif evt == TcpSocket.Events.Reconnect then
+		status('Socket reconnecting...', 5)
+		debug('Socket Reconnecting')
+	elseif evt == TcpSocket.Events.Data then
+		while sock:Search(')') do
+			local data = sock:ReadLine(TcpSocket.EOL.Custom, ')')
+--      debug(data) --Debug
+			if buffer == '' then
+				if string.match(data,'(.)$') == '\\' then
+           buffer = data..') '
+				else
+					parseData(data..')')
+				end
+			else
+				if string.match(data,'(.)$') == '\\' then
+					buffer = buffer..data..') '
+				else
+					parseData(buffer..data..')')
+					buffer = ''
+				end
+			end
+		end
+	elseif evt == TcpSocket.Events.Closed then
+		status('Socket closed by remote', 4)
+		debug('Socket Closed by Remote')
+	elseif evt == TcpSocket.Events.Error then
+		status('Socket closed due to error', 2)
+		debug('Socket closed due to error: '..err)
+	elseif evt == TcpSocket.Events.Timeout then
+		status('Socket closed due to timeout', 2)
+		debug('Socket Closed Due to Timeout')
+	else
+		status('Unknown socket event', 2)
+		debug('Unknown Socket Event: '..evt)
+	end
+end
+
+updateTimer.EventHandler = function()
+  fetch('(PWR?)')
+  fetch('(SHU?)')
+  fetch('(SST+ALRM?)')
+end
+
+pollTimer.EventHandler = function()
+  fetch('(SST?)')
+--[[
+  fetch('(SST+SIGN?)')
+  fetch('(SST+VERS?)')
+  fetch('(SST+CONF?)')
+  fetch('(SST+TEMP?)')
+  fetch('(SST+SERI?)')
+  fetch('(SST+SYST?)')
+  fetch('(SST+LAMP?)')
+  fetch('(SST+COOL?)')
+  fetch('(SST+TEMP?)')
+  ]]
+end
+
+Power.EventHandler = function()
+  if Power.Legend ~= 'Cooling Down' or 'Warming Up' then
+    Power.Color = "Blue"
+	  local inputString = string.format('%01d',Power.Value)
+--    debug('(PWR '..inputString..')') --Debug
+    fetch('(PWR '..inputString..')')
+    fetch('(PWR?)')
+  end
+end
+Shutter.EventHandler = function()
+	local inputString = string.format('%01d',1 - Shutter.Value)
+--	debug('(SHU '..inputString..')') --Debug
+  fetch('(SHU '..inputString..')')
+  fetch('(SHU?)')
+end
+
+--Script Startup--
+sock:Disconnect()
+if IP.Value ~= nil or IP.Value ~= "" then sock:Connect(IP.Value, Port.Value) else debug("No IP Set") end
+status('Socket Connecting...', 5)
+NetworkLED.Boolean = true
+Power.Color = 'Blue'
+Power.Legend = 'Loading'
+Shutter.Color = 'Blue'
+Shutter.Legend = 'Loading'
+--End Code--
+end
